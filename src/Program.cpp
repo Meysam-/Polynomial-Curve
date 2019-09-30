@@ -92,15 +92,30 @@ void Program::createTestGeometryObject1() {
 	geometryObjects.push_back(testObject);
 }
 
-Geometry* Program::createPoint(float x, float y) {
+Geometry* Program::createPoint(float x, float y, glm::vec3 color = glm::vec3(1, 0, 0)) {
 	Geometry* point = new Geometry(GL_POINTS);
-	point->color = glm::vec3(1, 0, 0);
+	point->color = color;
 	point->verts.push_back(glm::vec3(x, y, 0.f));
 	renderEngine->assignBuffers(*point);
 	renderEngine->updateBuffers(*point);
 	geometryObjects.push_back(point);
 	return point;
 }
+
+Geometry* Program::createCurve(Geometry* p0, Geometry* p1, Geometry* p2, glm::vec3 color = glm::vec3(0, 1, 0)) {
+	Geometry* curve = new Geometry(GL_LINE_STRIP);
+	curve->color = color;
+	for (double u = 0.0; u <= 1.0; u += 0.01) {
+		double x = p0->verts[0][0] + p1->verts[0][0] * u + p2->verts[0][0] * u * u;
+		double y = p0->verts[0][1] + p1->verts[0][1] * u + p2->verts[0][1] * u * u;
+		curve->verts.push_back(glm::vec3(x, y, 0.f));
+	}
+	renderEngine->assignBuffers(*curve);
+	renderEngine->updateBuffers(*curve);
+	geometryObjects.push_back(curve);
+	return curve;
+}
+
 
 void Program::drawUI() {
 	// Start the Dear ImGui frame
@@ -153,11 +168,28 @@ void Program::mainLoop() {
 		glfwPollEvents();
 		
 		while (InputHandler::clickedPositions.size() > 0) {
+			if (geometryObjects.size() == 8) {
+				geometryObjects.clear();
+			}
 			std::pair<int, int> point = InputHandler::clickedPositions.back();
 			InputHandler::clickedPositions.pop_back();
 			double factor = 20.0 / 750.0;
 			//std::cout << point.first << " : " << point.second << std::endl;
 			createPoint(point.first*factor - 10.0, 10.0 - point.second*factor);
+		}
+
+		if (geometryObjects.size() == 3) {
+			Geometry* p0 = geometryObjects[0];
+			Geometry* p1 = geometryObjects[1];
+			Geometry* p2 = geometryObjects[2];
+			createCurve(p0, p1, p2);
+
+			double transform_x = 3;
+			double transform_y = -3;
+			Geometry* p0t = createPoint(p0->verts[0][0] + transform_x, p0->verts[0][1] + transform_y, glm::vec3(1, 1, 0));
+			Geometry* p1t = createPoint(p1->verts[0][0] + transform_x, p1->verts[0][1] + transform_y, glm::vec3(1, 1, 0));
+			Geometry* p2t = createPoint(p2->verts[0][0] + transform_x, p2->verts[0][1] + transform_y, glm::vec3(1, 1, 0));
+			createCurve(p0t, p1t, p2t, glm::vec3(0, 1, 1));
 		}
 
 		//drawUI();
