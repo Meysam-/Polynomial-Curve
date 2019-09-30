@@ -40,4 +40,5 @@ private:
 
 	void createTestGeometryObject();
 	void createTestGeometryObject1();
+	Geometry* createPoint(float x, float y);
 };

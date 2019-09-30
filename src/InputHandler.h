@@ -4,12 +4,18 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
+#include <vector>
+#include <utility>
 
 #include "RenderEngine.h"
 
 class InputHandler {
 
 public:
+	static int mouseOldX;
+	static int mouseOldY;
+	static std::vector<std::pair<int,int>> clickedPositions;
+
 	static void setUp(RenderEngine* renderEngine);
 
 	static void key(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -20,7 +26,4 @@ public:
 
 private:
 	static RenderEngine* renderEngine;
-
-	static int mouseOldX;
-	static int mouseOldY;
 };

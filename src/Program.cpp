@@ -1,5 +1,6 @@
 #include "Program.h"
 
+
 Program::Program() {
 	window = nullptr;
 	renderEngine = nullptr;
@@ -39,7 +40,7 @@ void Program::setupWindow() {
 	}
 
 	glfwWindowHint(GLFW_SAMPLES, 16);
-	window = glfwCreateWindow(1024, 1024, "589 Boilerplate", NULL, NULL);
+	window = glfwCreateWindow(749, 749, "589 Boilerplate", NULL, NULL);
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1); // V-sync on
 
@@ -91,6 +92,16 @@ void Program::createTestGeometryObject1() {
 	geometryObjects.push_back(testObject);
 }
 
+Geometry* Program::createPoint(float x, float y) {
+	Geometry* point = new Geometry(GL_POINTS);
+	point->color = glm::vec3(1, 0, 0);
+	point->verts.push_back(glm::vec3(x, y, 0.f));
+	renderEngine->assignBuffers(*point);
+	renderEngine->updateBuffers(*point);
+	geometryObjects.push_back(point);
+	return point;
+}
+
 void Program::drawUI() {
 	// Start the Dear ImGui frame
 	ImGui_ImplOpenGL3_NewFrame();
@@ -130,27 +141,38 @@ void Program::drawUI() {
 
 // Main loop
 void Program::mainLoop() {
-	createTestGeometryObject();
+	//createTestGeometryObject();
+	//createPoint(0, 0);
+	//createPoint(-10, 10);
+
 	
 	// Our state
 	show_test_window = false;
 	clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	while(!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
+		
+		while (InputHandler::clickedPositions.size() > 0) {
+			std::pair<int, int> point = InputHandler::clickedPositions.back();
+			InputHandler::clickedPositions.pop_back();
+			double factor = 20.0 / 750.0;
+			//std::cout << point.first << " : " << point.second << std::endl;
+			createPoint(point.first*factor - 10.0, 10.0 - point.second*factor);
+		}
 
-		drawUI();
+		//drawUI();
 
 		// Rendering
-		ImGui::Render();
+		//ImGui::Render();
 		int display_w, display_h;
 		glfwGetFramebufferSize(window, &display_w, &display_h);
 		glViewport(0, 0, display_w, display_h);
 		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 		glClear(GL_COLOR_BUFFER_BIT);
-		glPointSize(1);
+		glPointSize(5);
 
 		renderEngine->render(geometryObjects, glm::mat4(1.f));
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		//ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		glfwSwapBuffers(window);
 	}
